@@ -1,0 +1,44 @@
+diff --git a/src/github.com/docker/docker/vendor/github.com/moby/buildkit/solver/llbsolver/solver.go b/solver.go
+index 31e8afca7a..fb1032b84a 100644
+--- a/src/github.com/docker/docker/vendor/github.com/moby/buildkit/solver/llbsolver/solver.go
++++ b/solver.go
+@@ -4,6 +4,7 @@ import (
+ 	"context"
+ 	"fmt"
+ 	"strings"
++	"sync"
+ 	"time"
+ 
+ 	"github.com/moby/buildkit/cache"
+@@ -46,6 +47,7 @@ type Solver struct {
+ 	gatewayForwarder          *controlgateway.GatewayForwarder
+ 	sm                        *session.Manager
+ 	entitlements              []string
++	cacheMu                   sync.Mutex
+ }
+ 
+ func New(wc *worker.Controller, f map[string]frontend.Frontend, cache solver.CacheManager, resolveCI map[string]remotecache.ResolveCacheImporterFunc, gatewayForwarder *controlgateway.GatewayForwarder, sm *session.Manager, ents []string) (*Solver, error) {
+@@ -172,8 +174,10 @@ func (s *Solver) Solve(ctx context.Context, id string, sessionID string, req fro
+ 				return nil, errors.Errorf("invalid reference: %T", r.Sys())
+ 			}
+ 			inp.Ref = workerRef.ImmutableRef
+-
++			s.cacheMu.Lock()
+ 			dt, err := inlineCache(ctx, exp.CacheExporter, r, session.NewGroup(sessionID))
++			s.cacheMu.Unlock()
++
+ 			if err != nil {
+ 				return nil, err
+ 			}
+@@ -196,8 +200,10 @@ func (s *Solver) Solve(ctx context.Context, id string, sessionID string, req fro
+ 						return nil, errors.Errorf("invalid reference: %T", r.Sys())
+ 					}
+ 					m[k] = workerRef.ImmutableRef
+-
++					s.cacheMu.Lock()
+ 					dt, err := inlineCache(ctx, exp.CacheExporter, r, session.NewGroup(sessionID))
++					s.cacheMu.Unlock()
++
+ 					if err != nil {
+ 						return nil, err
+ 					}
