@@ -1,0 +1,23 @@
+diff --git a/src/github.com/docker/docker/vendor/github.com/moby/buildkit/solver/llbsolver/ops/source.go b/source.go
+index 4f8b6694f0..6c420a98dc 100644
+--- a/src/github.com/docker/docker/vendor/github.com/moby/buildkit/solver/llbsolver/ops/source.go
++++ b/source.go
+@@ -25,6 +25,7 @@ type sourceOp struct {
+ 	sessM    *session.Manager
+ 	w        worker.Worker
+ 	vtx      solver.Vertex
++	execMu   sync.Mutex
+ }
+ 
+ func NewSourceOp(vtx solver.Vertex, op *pb.Op_Source, platform *pb.Platform, sm *source.Manager, sessM *session.Manager, w worker.Worker) (solver.Op, error) {
+@@ -87,7 +88,10 @@ func (s *sourceOp) Exec(ctx context.Context, g session.Group, _ []solver.Result)
+ 	if err != nil {
+ 		return nil, err
+ 	}
++	s.execMu.Lock()
+ 	ref, err := src.Snapshot(ctx, g)
++	s.execMu.Unlock()
++
+ 	if err != nil {
+ 		return nil, err
+ 	}
