@@ -35,8 +35,8 @@ DOCKER_COMPOSE_REPO ?= https://github.com/docker/compose.git
 #
 # For other situations, specify DOCKER_CLI_REF and/or DOCKER_ENGINE_REF separately.
 REF                ?= HEAD
-DOCKER_CLI_REF     ?= $(REF)
-DOCKER_ENGINE_REF  ?= $(REF)
+DOCKER_CLI_REF     ?= 20.10
+DOCKER_ENGINE_REF  ?= 20.10
 DOCKER_SCAN_REF    ?= v0.23.0
 DOCKER_COMPOSE_REF ?= v2.14.0
 
